@@ -1,1 +1,1 @@
-# steamautoreg
+# Steam AutoReg
