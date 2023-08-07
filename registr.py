@@ -1,4 +1,4 @@
-import time
+"""Пример решения капчи при авторегистрации Steam"""
 
 from selenium.webdriver.support import expected_conditions as EC
 from driver_chrome import ChromeBrowser
@@ -9,10 +9,22 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 from typing import Optional
+import random
+import time
 from email_confirm import EmailConf
+
 
 class CustomRecaptchaSolver(RecaptchaSolver):
     def click_recaptcha_v2(self, iframe: WebElement, by_selector: Optional[str] = None) -> None:
+        """
+        Click the "I'm not a robot" checkbox and then solve a reCAPTCHA v2 challenge.
+
+        Call this method directly on web pages with an "I'm not a robot" checkbox. See <https://developers.google.com/recaptcha/docs/versions> for details of how this works.
+
+        :param iframe: web element for inline frame of reCAPTCHA to solve
+        :param by_selector: By selector to use to find the iframe, if ``iframe`` is a string
+        :raises selenium.common.exceptions.TimeoutException: if a timeout occurred while waiting
+        """
 
         if isinstance(iframe, str):
             WebDriverWait(self._driver, 150).until(
@@ -46,8 +58,14 @@ class CustomRecaptchaSolver(RecaptchaSolver):
         self.solve_recaptcha_v2_challenge(iframe=captcha_challenge)
 
     def solve_recaptcha_v2_challenge(self, iframe: WebElement) -> None:
-        #ttps://google.com/recaptcha/enterprise
-        #ttps://recaptcha.net/recaptcha/enterprise
+        """
+        Solve a reCAPTCHA v2 challenge that has already appeared.
+
+        Call this method directly on web pages with the "invisible reCAPTCHA" badge. See <https://developers.google.com/recaptcha/docs/versions> for details of how this works.
+
+        :param iframe: web element for inline frame of reCAPTCHA to solve
+        :raises selenium.common.exceptions.TimeoutException: if a timeout occurred while waiting
+        """
         iframe = \
         self._driver.find_elements(By.CSS_SELECTOR, 'iframe[src*="ttps://google.com/recaptcha/enterprise"]')[1]
         self._driver.switch_to.frame(iframe)
@@ -62,6 +80,7 @@ class CustomRecaptchaSolver(RecaptchaSolver):
             ).click()
 
         except TimeoutException:
+            print("Didn't find audio-button!")
             pass
 
         self._solve_audio_challenge('language')
