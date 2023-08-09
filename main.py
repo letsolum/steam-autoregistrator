@@ -4,7 +4,7 @@ import time
 if __name__ == '__main__':
     f = open('email.txt', 'r')
     data = f.read().splitlines()
-    data = data[2:]
+    data = data[6:]
     for user in data:
         user = user.split(':')
         login = user[0]
@@ -14,6 +14,6 @@ if __name__ == '__main__':
             autoReg.new_register()
         except Exception as error:
             print(error, "error!\nskipped to next")
-        break
-        time.sleep(1000)
+        #break
+        time.sleep(1000000)
 

@@ -22,7 +22,14 @@ class EmailConf:
         return txt
 
     def requestConf(self, url):
-        requests.get(url)
+        proxy_list = []
+        with open('proxy.txt') as f:
+            proxy_list = f.read().splitlines()
+        proxy_list = {
+            'https' : 'http://' + proxy_list[0].split(' ')[0]
+        }
+        requests.get(url, proxies=proxy_list)
+        print('Confirmed!')
 
     def confirm(self, login, password):
         self.login(login, password)

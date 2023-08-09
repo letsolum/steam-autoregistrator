@@ -20,7 +20,7 @@ class ChromeBrowser:
             proxy_list = f.read().splitlines()
         self.wire_options = {
             'proxy': {
-                'https': 'http://' + choice(proxy_list)
+                'https': 'http://' + choice(proxy_list).split(' ')[0]
             }
         }
         self.driver = uc.Chrome(seleniumwire_options=self.wire_options, options=self.options,

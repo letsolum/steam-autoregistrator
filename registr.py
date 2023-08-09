@@ -54,7 +54,7 @@ class CustomRecaptchaSolver(RecaptchaSolver):
             locator='iframe[src*="ttps://google.com/recaptcha/enterprise"]',
             timeout=5,
         )
-
+        time.sleep(4)
         self.solve_recaptcha_v2_challenge(iframe=captcha_challenge)
 
     def solve_recaptcha_v2_challenge(self, iframe: WebElement) -> None:
@@ -71,10 +71,11 @@ class CustomRecaptchaSolver(RecaptchaSolver):
         self._driver.switch_to.frame(iframe)
 
         # If the captcha image audio is available, locate it. Otherwise, skip to the next line of code.
-
+        time.sleep(1.5)
         try:
             self._wait_for_element(
                 by=By.XPATH,
+                #locator='//*[@id="recaptcha-audio-button"]',
                 locator='//*[@id="recaptcha-audio-button"]',
                 timeout=1,
             ).click()
@@ -82,9 +83,9 @@ class CustomRecaptchaSolver(RecaptchaSolver):
         except TimeoutException:
             print("Didn't find audio-button!")
             pass
-
+        time.sleep(1.5)
         self._solve_audio_challenge('language')
-
+        time.sleep(1.5)
         # Locate verify button and click it via JavaScript
         verify_button = self._wait_for_element(
             by=By.ID,
@@ -140,12 +141,41 @@ class RegisterSteam:
     def _insert_data(self):
         self.driver.find_element(By.CSS_SELECTOR, "#i_agree_check").click()
         self.driver.find_element(By.CSS_SELECTOR, "#email").send_keys(self.email)
+        time.sleep(1.5)
         self.driver.find_element(By.CSS_SELECTOR, "#reenter_email").send_keys(self.email)
+        time.sleep(1.5)
+
+
+    def _generate_data(self):
+        with open('accounts.txt', 'w') as f:
+            login = 'steam_deal' + str(random.randint(1000, 2000))
+            passw = ''
+            for _ in range(10):
+                symb = ''
+                if random.randint(1, 2) == 1:
+                    symb = str(random.randint(0, 9))
+                else:
+                    symb = chr(ord('a') + random.randint(0, 25))
+                passw += symb
+            passw += '_S_D'
+            f.write(login + ':' + passw + '\n')
+        self.driver.find_element(By.CSS_SELECTOR, "#accountname").send_keys(login)
+        self.driver.find_element(By.CSS_SELECTOR, "#password").send_keys(passw)
+        self.driver.find_element(By.CSS_SELECTOR, "#reenter_password").send_keys(passw)
+
+
+
 
     def new_register(self):
         self._get_url()
         self._solve_captcha()
         self._insert_data()
         self.driver.find_element(By.CSS_SELECTOR, "#createAccountButton").click()
-        time.sleep(5)
+        # time.sleep(5)
+        # self._solve_captcha()
+        # self.driver.find_element(By.CSS_SELECTOR, "#createAccountButton").click()
+        time.sleep(25)
         self.mailconf.confirm(self.email, self.password)
+        time.sleep(8)
+        self._generate_data()
+        self.driver.find_element(By.CSS_SELECTOR, "#createAccountButton").click()
