@@ -6,26 +6,30 @@ from selenium.webdriver.chrome.options import Options
 
 
 class ChromeBrowser:
-
     def __set_up(self):
         self.options = Options()
         _ua = choice(list(map(str.rstrip, open("user_agent_pc.txt").readlines())))
         self.options.add_argument(f'--user-agent={_ua}')
         self.options.add_argument('--ignore-certificate-errors')
+
         # options.add_argument("--remote-allow-origins=*")
-        # options.add_argument('--headless') # безголовый режим
+        #self.options.add_argument('--headless') # безголовый режим
 
         proxy_list = []
         with open('proxy.txt') as f:
             proxy_list = f.read().splitlines()
+        self.curr_proxy = choice(proxy_list).split(' ')[0]
         self.wire_options = {
             'proxy': {
-                'https': 'http://' + choice(proxy_list).split(' ')[0]
+                'https': 'http://' + self.curr_proxy
             }
         }
         self.driver = uc.Chrome(seleniumwire_options=self.wire_options, options=self.options,
-                                version_main=114)
+                                version_main=self.__get_chrome_version())
         # self.driver = uc.Chrome(options=self.options)
+
+    def get_proxy(self):
+        return self.curr_proxy
 
     @property
     def __get_chrome_version(self):
@@ -50,3 +54,6 @@ class ChromeBrowser:
     def get_driver(self):
         self.__set_up()
         return self.driver
+
+    def dele(self):
+        self.driver.quit()

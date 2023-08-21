@@ -1,5 +1,3 @@
-"""Пример решения капчи при авторегистрации Steam"""
-
 from selenium.webdriver.support import expected_conditions as EC
 from driver_chrome import ChromeBrowser
 from selenium_recaptcha_solver import RecaptchaSolver
@@ -12,20 +10,21 @@ from typing import Optional
 import random
 import time
 from email_confirm import EmailConf
+from configure_account import SafetyConfigure
 
+
+def waiting_for_element(driver, by_what, path):
+    for _ in range(20):
+        try:
+            driver.find_element(by_what, path)
+        except:
+            time.sleep(1)
+        else:
+            return driver.find_element(by_what, path)
+    return driver.find_element(by_what, path)
 
 class CustomRecaptchaSolver(RecaptchaSolver):
     def click_recaptcha_v2(self, iframe: WebElement, by_selector: Optional[str] = None) -> None:
-        """
-        Click the "I'm not a robot" checkbox and then solve a reCAPTCHA v2 challenge.
-
-        Call this method directly on web pages with an "I'm not a robot" checkbox. See <https://developers.google.com/recaptcha/docs/versions> for details of how this works.
-
-        :param iframe: web element for inline frame of reCAPTCHA to solve
-        :param by_selector: By selector to use to find the iframe, if ``iframe`` is a string
-        :raises selenium.common.exceptions.TimeoutException: if a timeout occurred while waiting
-        """
-
         if isinstance(iframe, str):
             WebDriverWait(self._driver, 150).until(
                 ec.frame_to_be_available_and_switch_to_it((by_selector, iframe)))
@@ -58,24 +57,14 @@ class CustomRecaptchaSolver(RecaptchaSolver):
         self.solve_recaptcha_v2_challenge(iframe=captcha_challenge)
 
     def solve_recaptcha_v2_challenge(self, iframe: WebElement) -> None:
-        """
-        Solve a reCAPTCHA v2 challenge that has already appeared.
-
-        Call this method directly on web pages with the "invisible reCAPTCHA" badge. See <https://developers.google.com/recaptcha/docs/versions> for details of how this works.
-
-        :param iframe: web element for inline frame of reCAPTCHA to solve
-        :raises selenium.common.exceptions.TimeoutException: if a timeout occurred while waiting
-        """
         iframe = \
-        self._driver.find_elements(By.CSS_SELECTOR, 'iframe[src*="ttps://google.com/recaptcha/enterprise"]')[1]
+            self._driver.find_elements(By.CSS_SELECTOR, 'iframe[src*="ttps://google.com/recaptcha/enterprise"]')[1]
         self._driver.switch_to.frame(iframe)
 
-        # If the captcha image audio is available, locate it. Otherwise, skip to the next line of code.
         time.sleep(1.5)
         try:
             self._wait_for_element(
                 by=By.XPATH,
-                #locator='//*[@id="recaptcha-audio-button"]',
                 locator='//*[@id="recaptcha-audio-button"]',
                 timeout=1,
             ).click()
@@ -124,7 +113,9 @@ class CustomRecaptchaSolver(RecaptchaSolver):
 
 class RegisterSteam:
     def __init__(self, em, pswrd):
-        self.driver = ChromeBrowser().get_driver()
+        brwsr = ChromeBrowser()
+        self.driver = brwsr.get_driver()
+        self.proxy = brwsr.get_proxy()
         self.mailconf = EmailConf()
         self.email = em
         self.password = pswrd
@@ -138,17 +129,20 @@ class RegisterSteam:
         solver = CustomRecaptchaSolver(driver=self.driver)
         solver.click_recaptcha_v2(iframe=recaptcha_iframe)
 
-    def _insert_data(self):
-        self.driver.find_element(By.CSS_SELECTOR, "#i_agree_check").click()
-        self.driver.find_element(By.CSS_SELECTOR, "#email").send_keys(self.email)
-        time.sleep(1.5)
-        self.driver.find_element(By.CSS_SELECTOR, "#reenter_email").send_keys(self.email)
-        time.sleep(1.5)
+    def __send_keys_as_human(self, where, what):
+        for symb in what:
+            waiting_for_element(self.driver, By.CSS_SELECTOR, where).send_keys(symb)
+            time.sleep(1 / 10 + random.randint(0, 10) / 100 * (random.randint(1, 3) - 2))
 
+    def _insert_data(self):
+        waiting_for_element(self.driver, By.CSS_SELECTOR, "#i_agree_check").click()
+        self.__send_keys_as_human("#email", self.email)
+        self.__send_keys_as_human("#reenter_email", self.email)
+        time.sleep(1.5)
 
     def _generate_data(self):
-        with open('accounts.txt', 'w') as f:
-            login = 'steam_deal' + str(random.randint(1000, 2000))
+        with open('accounts.txt', 'a') as f:
+            login = self.email[:self.email.find('@')]
             passw = ''
             for _ in range(10):
                 symb = ''
@@ -157,25 +151,28 @@ class RegisterSteam:
                 else:
                     symb = chr(ord('a') + random.randint(0, 25))
                 passw += symb
-            passw += '_S_D'
-            f.write(login + ':' + passw + '\n')
-        self.driver.find_element(By.CSS_SELECTOR, "#accountname").send_keys(login)
-        self.driver.find_element(By.CSS_SELECTOR, "#password").send_keys(passw)
-        self.driver.find_element(By.CSS_SELECTOR, "#reenter_password").send_keys(passw)
-
-
-
+            passw += '_SD'
+            f.write(self.email + ':' + self.password + ':' + login + ':' + passw + '\n')
+        waiting_for_element(self.driver, By.CSS_SELECTOR, "#accountname").send_keys(login)
+        waiting_for_element(self.driver, By.CSS_SELECTOR, "#password").send_keys(passw)
+        waiting_for_element(self.driver, By.CSS_SELECTOR, "#reenter_password").send_keys(passw)
+        waiting_for_element(self.driver, By.CSS_SELECTOR, "#createAccountButton").click()
+        return login, passw
 
     def new_register(self):
         self._get_url()
-        self._solve_captcha()
+        time.sleep(1)
         self._insert_data()
-        self.driver.find_element(By.CSS_SELECTOR, "#createAccountButton").click()
-        # time.sleep(5)
-        # self._solve_captcha()
-        # self.driver.find_element(By.CSS_SELECTOR, "#createAccountButton").click()
-        time.sleep(25)
-        self.mailconf.confirm(self.email, self.password)
-        time.sleep(8)
-        self._generate_data()
-        self.driver.find_element(By.CSS_SELECTOR, "#createAccountButton").click()
+        #self._solve_captcha()
+        time.sleep(20)
+        waiting_for_element(self.driver, By.CSS_SELECTOR, "#createAccountButton").click()
+        if not self.mailconf.confirm(self.email, self.password, self.proxy):
+            return False
+        time.sleep(5)
+        data = self._generate_data()
+        conf = SafetyConfigure(data[0], data[1], self.proxy)
+        conf.configure()
+        return True
+
+    def clear(self):
+        self.driver.quit()
