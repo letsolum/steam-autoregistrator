@@ -1,5 +1,11 @@
 # Steam AutoReg
-## TODO
-- FIX PROXY IN EMAIL CONFIRM
-- ADD NORMAL SAVING OF ACCOUNTS DATA
-- MANAGE SOME STUFF WITH BAD PROXY (CHOICE ANOTHER IF REG FAILED)
+
+## First Stable version 0.1.1
+### Usage
+- python3 main.py
+- headless mode for server
+
+## Roadmap
+1. Uplode on the server
+2. Create interface for adding new proxy
+3. Refactor all the code (xd)
