@@ -30,7 +30,7 @@ class SafetyConfigure:
                 'https': 'http://' + self.proxy
             }
         }
-        driver = uc.Chrome(version_main=114, options=chrome_options, seleniumwire_options=wire_options)
+        driver = uc.Chrome(version_main=117, options=chrome_options, seleniumwire_options=wire_options)
         driver.get("https://store.steampowered.com/login/")
 
         waiting_for_loading(driver,

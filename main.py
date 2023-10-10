@@ -7,7 +7,8 @@ if __name__ == '__main__':
     data = f.read().splitlines()
     ind = int(f_ind.read())
     f_ind.close()
-    for i in range(ind + 1, len(data)):
+    i = ind + 1
+    while i < len(data):
         user = data[i]
         user = user.split(':')
         login = user[0]
@@ -19,7 +20,10 @@ if __name__ == '__main__':
         try:
             checkValid.login(login, password)
         except Exception:
+            print("Bad email!", login, password)
+            i += 1
             continue
+        print("God email", login, password)
         autoReg = RegisterSteam(login, password)
         try:
             autoReg.new_register()
@@ -27,4 +31,6 @@ if __name__ == '__main__':
         except Exception as error:
             autoReg.clear()
             print(error, "error!\nskipped to next")
+        else:
+            i += 1
 

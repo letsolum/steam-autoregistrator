@@ -11,6 +11,7 @@ import random
 import time
 from email_confirm import EmailConf
 from configure_account import SafetyConfigure
+import datetime
 
 
 def waiting_for_element(driver, by_what, path):
@@ -143,6 +144,7 @@ class RegisterSteam:
     def _generate_data(self):
         with open('accounts.txt', 'a') as f:
             login = self.email[:self.email.find('@')]
+            login = login.replace('.', '')
             passw = ''
             for _ in range(10):
                 symb = ''
@@ -152,10 +154,12 @@ class RegisterSteam:
                     symb = chr(ord('a') + random.randint(0, 25))
                 passw += symb
             passw += '_SD'
-            f.write(self.email + ':' + self.password + ':' + login + ':' + passw + '\n')
+            current_time = datetime.datetime.now()
+            f.write('[' + str(current_time) + ']:' + self.email + ':' + self.password + ':' + login + ':' + passw + '\n')
         waiting_for_element(self.driver, By.CSS_SELECTOR, "#accountname").send_keys(login)
         waiting_for_element(self.driver, By.CSS_SELECTOR, "#password").send_keys(passw)
         waiting_for_element(self.driver, By.CSS_SELECTOR, "#reenter_password").send_keys(passw)
+        time.sleep(2)
         waiting_for_element(self.driver, By.CSS_SELECTOR, "#createAccountButton").click()
         return login, passw
 
@@ -163,10 +167,11 @@ class RegisterSteam:
         self._get_url()
         time.sleep(1)
         self._insert_data()
-        #self._solve_captcha()
-        time.sleep(20)
+        self._solve_captcha()
+        time.sleep(5)
         waiting_for_element(self.driver, By.CSS_SELECTOR, "#createAccountButton").click()
         if not self.mailconf.confirm(self.email, self.password, self.proxy):
+            print("170, register.py")
             return False
         time.sleep(5)
         data = self._generate_data()
