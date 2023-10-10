@@ -31,6 +31,8 @@ if __name__ == '__main__':
         except Exception as error:
             autoReg.clear()
             print(error, "error!\nskipped to next")
+            if (error.args == Exception("Problem with account configuration!").args):
+                i += 1
         else:
             i += 1
 

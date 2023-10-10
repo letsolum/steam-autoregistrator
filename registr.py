@@ -176,7 +176,10 @@ class RegisterSteam:
         time.sleep(5)
         data = self._generate_data()
         conf = SafetyConfigure(data[0], data[1], self.proxy)
-        conf.configure()
+        try:
+            conf.configure()
+        except Exception:
+            raise Exception("Problem with account configuration!")
         return True
 
     def clear(self):
