@@ -17,7 +17,7 @@ class ChromeBrowser:
         self.options.add_argument('--ignore-certificate-errors')
 
         # options.add_argument("--remote-allow-origins=*")
-        # sself.options.add_argument('--headless') # безголовый режим
+        self.options.add_argument('--headless') # безголовый режим
         proxy_index = 0
         with open('last_proxy.txt') as f:
             proxy_index = int(f.read())

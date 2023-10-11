@@ -172,7 +172,8 @@ class RegisterSteam:
         waiting_for_element(self.driver, By.CSS_SELECTOR, "#createAccountButton").click()
         if not self.mailconf.confirm(self.email, self.password, self.proxy):
             print("170, register.py")
-            return False
+            raise Exception
+        print("Captcha solved & mail confirmed!")
         time.sleep(5)
         data = self._generate_data()
         conf = SafetyConfigure(data[0], data[1], self.proxy)

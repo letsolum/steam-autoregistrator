@@ -36,9 +36,9 @@ class EmailConf:
         numMails = self.server.stat()[0]
         cnt = 0
         while numMails == 0:
-            time.sleep(1)
+            time.sleep(0.5)
             cnt += 1
-            if (cnt >= 100):
+            if (cnt >= 25):
                 raise Exception("Too long captcha solving or wrong email")
             self.server.quit()
             self.relogin()
@@ -46,9 +46,9 @@ class EmailConf:
         txt = str(self.server.retr(numMails)[1])
         txt = self.__extractUrl(txt)
         while len(txt) < 10:
-            time.sleep(1)
+            time.sleep(0.5)
             cnt += 1
-            if (cnt >= 100):
+            if (cnt >= 25):
                 raise Exception("Too long captcha solving or wrong email")
             self.server.quit()
             self.relogin()
@@ -73,8 +73,8 @@ class EmailConf:
             return False
         try:
             url = self.readLastMssg()
-        except Exception:
-            print(Exception, "Not read!")
+        except Exception as error:
+            print(error, "Not read!")
             return False
         try:
             self.requestConf(url, proxy)
