@@ -142,7 +142,7 @@ class RegisterSteam:
         time.sleep(1.5)
 
     def _generate_data(self):
-        with open('accounts.txt', 'a') as f:
+        with open('../data/accounts.txt', 'a') as f:
             login = self.email[:self.email.find('@')]
             login = login.replace('.', '')
             passw = ''
