@@ -1,3 +1,4 @@
+# COMERCIAL DEV CLOSED DUE TO STEAMRULES CHANGINGS
 # Steam AutoReg
 
 ## First Stable version 0.1.1
