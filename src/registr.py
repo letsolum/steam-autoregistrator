@@ -142,7 +142,7 @@ class RegisterSteam:
         time.sleep(1.5)
 
     def _generate_data(self):
-        with open('accounts.txt', 'a') as f:
+        with open('../data/accounts.txt', 'a') as f:
             login = self.email[:self.email.find('@')]
             login = login.replace('.', '')
             passw = ''
@@ -172,7 +172,8 @@ class RegisterSteam:
         waiting_for_element(self.driver, By.CSS_SELECTOR, "#createAccountButton").click()
         if not self.mailconf.confirm(self.email, self.password, self.proxy):
             print("170, register.py")
-            return False
+            raise Exception
+        print("Captcha solved & mail confirmed!")
         time.sleep(5)
         data = self._generate_data()
         conf = SafetyConfigure(data[0], data[1], self.proxy)

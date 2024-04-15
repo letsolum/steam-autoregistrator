@@ -7,24 +7,31 @@ from selenium_stealth import stealth
 
 
 class ChromeBrowser:
+    def __init__(self, headless=True):
+        self.__headless_mode = headless
+
     def __set_up(self):
         self.options = Options()
-        _ua = choice(list(map(str.rstrip, open("user_agent_pc.txt").readlines())))
+        _ua = choice(list(map(str.rstrip, open("../data/user_agent_pc.txt").readlines())))
         self.options.add_argument(f'--user-agent={_ua}')
         self.options.add_argument('--start-maximized')
         # self.options.add_experimental_option('excludeSwitches', ["enable-automation"])
         # self.options.add_argument('--headless=false')
         self.options.add_argument('--ignore-certificate-errors')
-
+        self.options.add_argument("--disable-blink-features")
+        self.options.add_argument('--disable-blink-features=AutomationControlled')
+        # self.options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        # self.options.add_experimental_option('useAutomationExtension', False)
         # options.add_argument("--remote-allow-origins=*")
-        # sself.options.add_argument('--headless') # безголовый режим
+        if self.__headless_mode:
+            self.options.add_argument('--headless')  # безголовый режим
         proxy_index = 0
-        with open('last_proxy.txt') as f:
+        with open('../data/last_proxy.txt') as f:
             proxy_index = int(f.read())
-        with open('last_proxy.txt', 'w') as f:
+        with open('../data/last_proxy.txt', 'w') as f:
             f.write(str(proxy_index + 1))
         proxy_list = []
-        with open('proxy.txt') as f:
+        with open('../data/proxy.txt') as f:
             proxy_list = f.read().splitlines()
         proxy_index %= len(proxy_list)
         self.curr_proxy = proxy_list[proxy_index]
@@ -33,7 +40,17 @@ class ChromeBrowser:
                 'https': 'http://' + self.curr_proxy
             }
         }
+        #
         self.driver = uc.Chrome(seleniumwire_options=self.wire_options, options=self.options, version_main=117)
+        self.driver.execute_script("""
+           Object.defineProperty(navigator, 'deviceMemory', {
+                 get: () => 8
+           });
+           Object.defineProperty(navigator, 'hardwareConcurrency', {
+	             get: () => 8
+           });
+    """)
+        self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
 
         stealth(self.driver,
                 languages=["en-US", "en"],
@@ -47,29 +64,6 @@ class ChromeBrowser:
     def get_proxy(self):
         return self.curr_proxy
 
-    @property
-    def __get_chrome_version(self):
-        """Определяет версию chrome в зависимости от платформы"""
-        if os.name == 'nt':
-            import winreg
-            # открываем ключ реестра, содержащий информацию о Google Chrome
-            reg_key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Google\Chrome\BLBeacon")
-            # считываем значение ключа "version"
-            version = winreg.QueryValueEx(reg_key, "version")[0]
-            return version.split(".")[0]
-        else:
-            output = subprocess.check_output(
-                ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '--version'])
-            try:
-                version = output.decode('utf-8').split()[-1]
-                version = version.split(".")[0]
-                return version
-            except Exception as error:
-                raise Exception(f"Chrome Exception: {error}")
-
     def get_driver(self):
         self.__set_up()
         return self.driver
-
-    def dele(self):
-        self.driver.quit()
